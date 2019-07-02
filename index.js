@@ -51,7 +51,7 @@ var data = {
   });
 });
 
-httpServer.listen(3000);
+httpServer.listen(process.env.PORT || 3000);
 
 
 var router = {
