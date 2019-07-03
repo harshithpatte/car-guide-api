@@ -51,10 +51,31 @@ handlers.getvehicle = function(data, callback) {
 		callback(405);
 	}
 }
+
+handlers.toggleenginestate = function(data, callback) {
+	var acceptableMethods = ['PUT'];
+	if (acceptableMethods.indexOf(data.method) > -1) {
+		handlers._toggleenginestate[data.method](data, callback);
+	} else {
+		callback(405);
+	}
+}
+
+handlers.toggledoorlockstate = function(data, callback) {
+	var acceptableMethods = ['PUT'];
+	if (acceptableMethods.indexOf(data.method) > -1) {
+		handlers._toggledoorlockstate[data.method](data, callback);
+	} else {
+		callback(405);
+	}
+}
+
 //container for the user submethods
 handlers._addvehicle = {};
 handlers._removevehicle = {};
 handlers._getvehicle = {};
+handlers._toggleenginestate = {};
+handlers._toggledoorlockstate = {};
 
 
 //POST handler
@@ -129,11 +150,75 @@ handlers._getvehicle.GET = function(data, callback) {
 
 		_data.read('users', username, function(err, data) {
 			if (!err) {
-				res = {};
-				res.vehicle = data.vehicle;
-				callback(200, res);
+				updateData = data;
+				updateData.vehicle.odometer = Math.floor(Math.random() * 100000);
+				updateData.vehicle.fuel_level = Math.floor(Math.random() * 100);
+				updateData.vehicle.dte = Math.floor(Math.random() * 1000);
+				updateData.vehicle.oil_life = Math.floor(Math.random() * 100);
+				updateData.vehicle.tpms.lf = Math.floor(Math.random() * (32-25) + 25);
+				updateData.vehicle.tpms.rf = Math.floor(Math.random() * (32-25) + 25);
+				updateData.vehicle.tpms.lb = Math.floor(Math.random() * (32-25) + 25);
+				updateData.vehicle.tpms.rb = Math.floor(Math.random() * (32-25) + 25);
+
+				_data.update('users', username, updateData, function(err) {
+					if (!err) {
+						callback(200, updateData);
+					} else {
+						callback(400, {'error': 'unable to fetch vehicle data'});
+					}
+				});
 				} else {
-					callback(400, {'error': 'unable to fetch vehicle information'});
+					callback(400, {'error': 'user does not exist'});
+				}
+			});
+	} else {
+		callback(400, {'error':'incorrect username'});
+	}
+}
+
+handlers._toggleenginestate.PUT = function(data, callback) {
+	//verify that all the feilds are valid
+	var username = typeof(data.queryStrigObj.username) == 'string' && data.queryStrigObj.username.trim().length > 0 ? data.queryStrigObj.username : false;
+
+	if (username) {
+		_data.read('users', username, function(err, data) {
+			if (!err) {
+				updateData = data;
+				updateData.vehicle.engine_state = !data.vehicle.engine_state;
+				_data.update('users', username, updateData, function(err) {
+					if (!err) {
+						callback(200);
+					} else {
+						callback(400, {'error': 'unable to perform vehicle operation'});
+					}
+				});
+				} else {
+					callback(400, {'error': 'user does not exist'});
+				}
+			});
+	} else {
+		callback(400, {'error':'incorrect username'});
+	}
+}
+
+handlers._toggledoorlockstate.PUT = function(data, callback) {
+	//verify that all the feilds are valid
+	var username = typeof(data.queryStrigObj.username) == 'string' && data.queryStrigObj.username.trim().length > 0 ? data.queryStrigObj.username : false;
+
+	if (username) {
+		_data.read('users', username, function(err, data) {
+			if (!err) {
+				updateData = data;
+				updateData.vehicle.lock_state = !data.vehicle.lock_state;
+				_data.update('users', username, updateData, function(err) {
+					if (!err) {
+						callback(200);
+					} else {
+						callback(400, {'error': 'unable to perform vehicle operation'});
+					}
+				});
+				} else {
+					callback(400, {'error': 'user does not exist'});
 				}
 			});
 	} else {

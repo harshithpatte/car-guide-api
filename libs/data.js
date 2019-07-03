@@ -41,7 +41,7 @@ lib.read = function(dir, file, callback) {
 			var jsonData = JSON.parse(data);
 			callback(err, jsonData);
 		} else {
-			callback(false);
+			callback('file does not exist');
 		}
 	})
 }

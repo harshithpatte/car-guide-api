@@ -57,6 +57,8 @@ httpServer.listen(process.env.PORT || 3000);
 var router = {
 	"addvehicle" : handlers.addvehicle,
   "removevehicle" : handlers.removevehicle,
-  "getvehicle" : handlers.getvehicle
+  "getvehicle" : handlers.getvehicle,
+	"toggleenginestate" : handlers.toggleenginestate,
+	"toggledoorlockstate" : handlers.toggledoorlockstate
 	// 'users' : handlers.users
 };
